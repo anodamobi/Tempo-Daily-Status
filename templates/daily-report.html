@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        #summary {
+            width: 100%;
+            overflow: hidden;
+            list-style: none;
+        }
+        #summary li {
+            float: left;
+            width: 200px;
+            border: 1px solid gray;
+        }
+        #summary li .workload {
+            background: yellow;
+        }
+        #summary li .workload .inner {
+            height: 10px;
+            background: green;
+        }
+    </style>
+</head>
+<body>
+<div id="info">
+    <div class="date">{{ data['date'].strftime('%A, %B %d') }}</div>
+</div>
+<ul id="summary">
+{% for username, user in users.iteritems() %}
+    <li>
+        <div class="username">{{ user['full_name'] }}</div>
+        <div class="hours">Hours: {{ user['stats']['total_hours'] }}</div>
+        <div class="worklogs">Worklogs: {{ user['stats']['total_worklogs'] }}</div>
+        <div class="workload"><div class="inner" style="width: {{ user['stats']['workload'] }}%"></div></div>
+    </li>
+{% endfor %}
+</ul>
+<ul id="details">
+{% for username, user in users.iteritems() %}
+    <li>
+        <div class="username">{{ user['full_name'] }}</div>
+        <div class="hours">{{ user['stats']['total_hours'] }}</div>
+        <ul class="worklogs">
+            {% for worklog in user['worklogs'] %}
+            <li>
+                <div class="worklog">
+                    <div class="hours">{{ worklog['hours'] }}</div>
+                    <div class="work-description">{{ worklog['work_description'] }}</div>
+                    <div class="created">{{ worklog['worklog_details']['created'] }}</div>
+                    <div class="updated">{{ worklog['worklog_details']['updated'] }}</div>
+                </div>
+                <div class="project">
+                    <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">
+                        {{ worklog['issue_details']['project_name'] }}
+                    </a>
+                </div>
+                <b>Issue details:</b>
+                <div class="issue">
+                    <div class="key">
+                        {{ worklog['issue_key'] }}
+                    </div>
+                    <div class="summary">
+                        <b>Summary:</b>
+                        {{ worklog['issue_summary'] }}
+                    </div>
+                    <div class="description">
+                        <b>Description:</b>
+                        {{ worklog['issue_description'] }}
+                    </div>
+                    <div class="name">
+                        <b>Status:</b>
+                        {{ worklog['issue_details']['status_name'] }}
+                    </div>
+                    <div class="type">
+                        <b>Type</b>
+                        {{ worklog['issue_details']['type_name'] }}
+                    </div>
+                    <div class="original_estimate">
+                        <b>Original estimate:</b>
+                        {{ worklog['issue_details']['original_estimate'] }} hours
+                    </div>
+                    <div class="remaining_estimate">
+                        <b>Remaining estimate:</b>
+                        {{ worklog['issue_details']['remaining_estimate'] }} hours
+                    </div>
+                    <div class="priority">
+                        <b>Priority:</b>
+                        {{ worklog['issue_details']['priority_name'] }}
+                    </div>
+                    <div class="resolution">
+                        <b>Resolution:</b>
+                        {{ worklog['issue_details']['resolution_name'] }}
+                    </div>
+                    <div class="component">
+                        <b>Component:</b>
+                        {{ worklog['issue_details']['component_name'] }}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
+</body>
+</html>
