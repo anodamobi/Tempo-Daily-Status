@@ -4,8 +4,23 @@ __author__ = 'themengzor'
 
 import requests
 import ConfigParser
+from datetime import date
+from xml.etree import ElementTree
+from pprint import pprint
+from jinja2 import Template
 
+# today = date.today()
+today = date(2014,12,18)
 configFile = ConfigParser.ConfigParser()
+
+def tree2dict(element):
+    result = {}
+    for child in element._children:
+        if len(child._children) > 0:
+            result[child.tag] = tree2dict(child)
+        else:
+            result[child.tag] = child.text
+    return result
 
 try:
     configFile.read('tds.conf')
@@ -17,6 +32,7 @@ globalConfig = {}
 smtpConfig = {}
 tempoConfig = {}
 
+# reading config
 try:
     globalConfig['emails'] = configFile.get('global', 'emails')
     smtpConfig['server'] = configFile.get('smtp', 'server')
@@ -26,7 +42,65 @@ try:
     smtpConfig['login'] = configFile.get('smtp', 'login')
     smtpConfig['password'] = configFile.get('smtp', 'password')
     tempoConfig['baseurl'] = configFile.get('tempo', 'baseurl')
-except:
+    tempoConfig['token'] = configFile.get('tempo', 'token')
+except Exception as e:
     print 'Unable to parse config file'
+    print e.message
     exit(1)
 
+# getting worklogs
+worklogs = []
+try:
+    url = tempoConfig['baseurl']
+    url += '/plugins/servlet/tempo-getWorklog/'
+    url += '?dateFrom=%s-%s-%s' % (today.year, today.month, today.day)
+    url += '&dateTo=%s-%s-%s' % (today.year, today.month, today.day)
+    url += '&format=xml'
+    url += '&diffOnly=false'
+    url += '&addUserDetails=true'
+    url += '&addApprovalStatus=true'
+    url += '&addBillingInfo=true'
+    url += '&addIssueDescription=true'
+    url += '&addIssueDetails=true'
+    url += '&addIssueSummary=true'
+    url += '&addWorklogDetails=true'
+    url += '&tempoApiToken=%s' % tempoConfig['token']
+    request = requests.get(url)
+except Exception as e:
+    print 'Unable to get worklogs due the error:'
+    print e.message
+    exit(1)
+else:
+    tree = ElementTree.fromstring(request.content)
+    worklogKeys = []
+    for worklog in tree:
+        item = tree2dict(worklog)
+        worklogs.append(item)
+
+users = {}
+for worklog in worklogs:
+    if not users.has_key(worklog['username']):
+        users[worklog['username']] = {
+            'worklogs': [],
+            'stats': {
+                'total_hours': 0.0,
+                'total_worklogs': 0,
+                'workload': 0
+            },
+            'full_name': worklog['user_details']['full_name']
+        }
+    users[worklog['username']]['worklogs'].append(worklog)
+    users[worklog['username']]['stats']['total_hours'] += float(worklog['hours'])
+    users[worklog['username']]['stats']['total_worklogs'] += 1
+    users[worklog['username']]['stats']['workload'] = min(8, users[worklog['username']]['stats']['total_hours']) / 8 * 100
+
+pprint(users)
+
+data = {
+    'date': today
+}
+
+template = Template(open('templates/daily-report.html').read())
+result = template.render(users=users, globalConfig=globalConfig, tempoConfig=tempoConfig, data=data)
+open('result.html', 'w+').write(result.encode('UTF-8'))
+print result
