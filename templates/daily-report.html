@@ -126,102 +126,123 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        h2.error {
+            text-align: center;
+            color: #ff7875;
+        }
+        #footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #aaa;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 <div id="info">
-    <h1>Your team TEMPO worklogs</h1>
+    <!--<h1>Your team TEMPO worklogs</h1>-->
     <div class="date">{{ data['date'].strftime('%A, %B %d') }}</div>
 </div>
-<ul id="summary">
-{% for username, user in users.iteritems() %}
-    <li>
-        <div class="username">{{ user['full_name'] }}</div>
-        <div class="hours">Hours: {{ user['stats']['total_hours'] }}</div>
-        <div class="worklogs">Worklogs: {{ user['stats']['total_worklogs'] }}</div>
-        <div class="workload"><div class="inner" style="width: {{ user['stats']['workload'] }}%"></div></div>
-    </li>
-{% endfor %}
-</ul>
-<ul id="details">
-{% for username, user in users.iteritems() %}
-    <li>
-        <h2>{{ user['full_name'] }} <span class="hours">{{ user['stats']['total_hours'] }} hours</span></h2>
-        <ul class="worklogs">
-            {% for worklog in user['worklogs'] %}
-            <li>
-                <div class="issue">
-                    <div class="priority pull-right">
-                        {{ worklog['issue_details']['priority_name'] }}
-                        <img  src="{{ tempoConfig['baseurl'] }}/images/icons/priorities/{{ worklog['issue_details']['priority_name']|lower }}.png" />
-                    </div>
-
-                    <div class="key">
-                        <img src="{{ tempoConfig['baseurl'] }}/images/icons/issuetypes/{{ worklog['issue_details']['type_name']|lower|replace(' ', '') }}.png" />
-                        <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">{{ worklog['issue_details']['project_name'] }}</a>
-                        /
-                        <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_key'] }}">{{ worklog['issue_key'] }}</a>
-                        <span class="status {{ worklog['issue_details']['status_name']|lower|replace(' ', '') }}">
-                            {{ worklog['issue_details']['status_name'] }}
-                        </span>
-                    </div>
-
-                    <div class="summary">
-                        {{ worklog['issue_summary'] }}
-                    </div>
-
-                    <!--{% if worklog['issue_description'] %}-->
-                        <!--<div class="description">-->
-                            <!--{{ worklog['issue_description'] }}-->
-                        <!--</div>-->
-                    <!--{% endif %}-->
-
-                    {% if worklog['issue_details']['resolution_name'] %}
-                        <div class="resolution small">
-                            <b>Resolution:</b>
-                            {{ worklog['issue_details']['resolution_name'] }}
+{% if users|count > 0 %}
+    <ul id="summary">
+    {% for username, user in users.iteritems() %}
+        <li>
+            <div class="username">{{ user['full_name'] }}</div>
+            <div class="hours">Hours: {{ user['stats']['total_hours'] }}</div>
+            <div class="worklogs">Worklogs: {{ user['stats']['total_worklogs'] }}</div>
+            <div class="workload"><div class="inner" style="width: {{ user['stats']['workload'] }}%"></div></div>
+        </li>
+    {% endfor %}
+    </ul>
+    <ul id="details">
+    {% for username, user in users.iteritems() %}
+        <li>
+            <h2>{{ user['full_name'] }} <span class="hours">{{ user['stats']['total_hours'] }} hours</span></h2>
+            <ul class="worklogs">
+                {% for worklog in user['worklogs'] %}
+                <li>
+                    <div class="issue">
+                        <div class="priority pull-right">
+                            {{ worklog['issue_details']['priority_name'] }}
+                            <img  src="{{ tempoConfig['baseurl'] }}/images/icons/priorities/{{ worklog['issue_details']['priority_name']|lower }}.png" />
                         </div>
-                    {% endif %}
 
-                    {% if worklog['issue_details']['component_name'] %}
-                        <div class="component small">
-                            <b>Component:</b>
-                            {{ worklog['issue_details']['component_name'] }}
+                        <div class="key">
+                            <img src="{{ tempoConfig['baseurl'] }}/images/icons/issuetypes/{{ worklog['issue_details']['type_name']|lower|replace(' ', '') }}.png" />
+                            <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">{{ worklog['issue_details']['project_name'] }}</a>
+                            /
+                            <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_key'] }}">{{ worklog['issue_key'] }}</a>
+                            <span class="status {{ worklog['issue_details']['status_name']|lower|replace(' ', '') }}">
+                                {{ worklog['issue_details']['status_name'] }}
+                            </span>
                         </div>
-                    {% endif %}
 
-                    <div class="original_estimate small">
-                        <b>Original estimate:</b>
-                        {{ worklog['issue_details']['original_estimate'] }} hours
-                    </div>
-                    <div class="remaining_estimate small">
-                        <b>Remaining estimate:</b>
-                        {{ worklog['issue_details']['remaining_estimate'] }} hours
-                    </div>
+                        <div class="summary">
+                            {{ worklog['issue_summary'] }}
+                        </div>
 
-                </div>
-                <div class="worklog">
-                    <div class="hours">
-                        <b>Logged:</b>
-                        {{ worklog['hours'] }} hours
+                        <!--{% if worklog['issue_description'] %}-->
+                            <!--<div class="description">-->
+                                <!--{{ worklog['issue_description'] }}-->
+                            <!--</div>-->
+                        <!--{% endif %}-->
+
+                        {% if worklog['issue_details']['resolution_name'] %}
+                            <div class="resolution small">
+                                <b>Resolution:</b>
+                                {{ worklog['issue_details']['resolution_name'] }}
+                            </div>
+                        {% endif %}
+
+                        {% if worklog['issue_details']['component_name'] %}
+                            <div class="component small">
+                                <b>Component:</b>
+                                {{ worklog['issue_details']['component_name'] }}
+                            </div>
+                        {% endif %}
+
+                        <div class="original_estimate small">
+                            <b>Original estimate:</b>
+                            {{ worklog['issue_details']['original_estimate'] }} hours
+                        </div>
+                        <div class="remaining_estimate small">
+                            <b>Remaining estimate:</b>
+                            {{ worklog['issue_details']['remaining_estimate'] }} hours
+                        </div>
+
                     </div>
-                    {% if worklog['work_description'] %}
-                        <div class="work-description">{{ worklog['work_description'] }}</div>
-                    {% endif %}
-                    <div class="created small">
-                        <b>Created on:</b>
-                        {{ worklog['worklog_details']['created'] }}
+                    <div class="worklog">
+                        <div class="hours">
+                            <b>Logged:</b>
+                            {{ worklog['hours'] }} hours
+                        </div>
+                        {% if worklog['work_description'] %}
+                            <div class="work-description">{{ worklog['work_description'] }}</div>
+                        {% endif %}
+                        <div class="created small">
+                            <b>Created on:</b>
+                            {{ worklog['worklog_details']['created'] }}
+                        </div>
+                        <div class="updated small">
+                            <b>Updated on:</b>
+                            {{ worklog['worklog_details']['updated'] }}
+                        </div>
                     </div>
-                    <div class="updated small">
-                        <b>Updated on:</b>
-                        {{ worklog['worklog_details']['updated'] }}
-                    </div>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </li>
-{% endfor %}
-</ul>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <h2 class="error">No worklogs yet</h2>
+{% endif %}
+<div id="footer">
+    <p class="copyright">Generated with <a href="https://github.com/anodamobi/Tempo-Daily-Status">Tempo Daily Reports</a> created by <a
+        href="http://anoda.mobi">ANODA Mobile Development Agency</a></p>
+    <p class="hint">Found a bug? Submit a bugreport at <a
+            href="https://github.com/anodamobi/Tempo-Daily-Status/issues/new">GitHub</a> or mail us directly on <a
+            href="mailto:alex@anoda.mobi?subject=Daily Status Report Bugreport">alex@anoda.mobi</a></p>
+</div>
 </body>
 </html>
