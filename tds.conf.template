@@ -1,0 +1,37 @@
+[global]
+
+# Comma separated emails to send reports
+emails = test@example.com
+
+[smtp]
+
+# SMTP server address (FQDN or IP)
+server = smtp.example.com
+
+# SMTP server port
+port = 465
+
+# SMTP server connection secutiry type (ssl/tls/none)
+security = ssl
+
+# SMTP server auth type (password/none)
+auth = passwod
+
+# SMTP server login
+login = test@example.com
+
+# SMTP server password
+password = examplePassword
+
+# SMTP from address
+from = test@example.com
+
+[tempo]
+
+# JIRA Base URL (http://jira.example.com)
+baseurl = http://jira.example.com
+
+# TEMPO Security token
+# Get it on http://jira.example.com/secure/admin/TempoServicesAccess!default.jspa
+# Don't forget to add IP address of the server where this script is hosted
+token = 00000000-0000-0000-0000-000000000000
