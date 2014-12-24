@@ -15,7 +15,7 @@ Requirements:
 Installation
 ------------
 
-1) Download latest source code archive or clone this repo to your server:
+1) [Download latest source code archive](https://github.com/anodamobi/Tempo-Daily-Status/archive/master.zip) or clone this repo to your server:
 
 ```
 git clone https://github.com/anodamobi/Tempo-Daily-Status.git
