@@ -2,24 +2,109 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
     <title></title>
     <style>
+        body {
+            color: #333;
+            font-family: Arial,sans-serif;
+            font-size: 14px;
+            line-height: 1.42857142857143;
+        }
+        a {
+            color: #3b73af;
+        }
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+        .pull-right {
+            float: right;
+        }
         #summary {
             width: 100%;
             overflow: hidden;
             list-style: none;
+            padding-top: 1px;
         }
         #summary li {
             float: left;
             width: 200px;
             border: 1px solid gray;
+            padding: 10px;
+            margin-right: -1px;
+            margin-top: -1px;
         }
         #summary li .workload {
-            background: yellow;
+            background: #e5e5e5;
         }
         #summary li .workload .inner {
             height: 10px;
-            background: green;
+            background: #3b73af;
+        }
+        #summary .username {
+            font-weight: bold;
+        }
+        #details {
+            list-style: none;
+        }
+        #details > li {
+            background: #f5f5f5;
+        }
+        .worklogs > li {
+            border: 1px solid #cccccc;
+            list-style: none;
+            padding: 10px;
+            background: #fff;
+            margin-top: -1px;
+        }
+        .worklogs .summary {
+            font-weight: bold;
+        }
+        .status {
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            color: #333;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 99%;
+            margin: 0;
+            padding: 2px 5px;
+            text-align: center;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .status.closed,
+        .status.resolved {
+            background-color: #fff;
+            border-color: #b2d8b9;
+            color: #14892c;
+        }
+        .status.reopened,
+        .status.open {
+            background-color: #fff;
+            border-color: #e4e8ed;
+            color: #4a6785;
+        }
+        .status.inprogress {
+            background-color: #fff;
+            border-color: #ffe28c;
+            color: #594300;
+        }
+        img {
+            vertical-align:text-bottom;
+        }
+        .summary {
+            font-size: 1.1em;
+        }
+        .worklog {
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        #info .date {
+            
         }
     </style>
 </head>
@@ -45,58 +130,66 @@
         <ul class="worklogs">
             {% for worklog in user['worklogs'] %}
             <li>
-                <div class="worklog">
-                    <div class="hours">{{ worklog['hours'] }}</div>
-                    <div class="work-description">{{ worklog['work_description'] }}</div>
-                    <div class="created">{{ worklog['worklog_details']['created'] }}</div>
-                    <div class="updated">{{ worklog['worklog_details']['updated'] }}</div>
-                </div>
-                <div class="project">
-                    <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">
-                        {{ worklog['issue_details']['project_name'] }}
-                    </a>
-                </div>
-                <b>Issue details:</b>
                 <div class="issue">
-                    <div class="key">
-                        {{ worklog['issue_key'] }}
+                    <div class="priority pull-right">
+                        {{ worklog['issue_details']['priority_name'] }}
+                        <img  src="{{ tempoConfig['baseurl'] }}/images/icons/priorities/{{ worklog['issue_details']['priority_name']|lower }}.png" />
                     </div>
+
+                    <div class="key">
+                        <img src="{{ tempoConfig['baseurl'] }}/images/icons/issuetypes/{{ worklog['issue_details']['type_name']|lower|replace(' ', '') }}.png" />
+                        <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">{{ worklog['issue_details']['project_name'] }}</a>
+                        /
+                        <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_key'] }}">{{ worklog['issue_key'] }}</a>
+                        <span class="status {{ worklog['issue_details']['status_name']|lower|replace(' ', '') }}">
+                            {{ worklog['issue_details']['status_name'] }}
+                        </span>
+                    </div>
+
                     <div class="summary">
-                        <b>Summary:</b>
                         {{ worklog['issue_summary'] }}
                     </div>
-                    <div class="description">
-                        <b>Description:</b>
-                        {{ worklog['issue_description'] }}
-                    </div>
-                    <div class="name">
-                        <b>Status:</b>
-                        {{ worklog['issue_details']['status_name'] }}
-                    </div>
-                    <div class="type">
-                        <b>Type</b>
-                        {{ worklog['issue_details']['type_name'] }}
-                    </div>
-                    <div class="original_estimate">
+
+                    <!--{% if worklog['issue_description'] %}-->
+                        <!--<div class="description">-->
+                            <!--{{ worklog['issue_description'] }}-->
+                        <!--</div>-->
+                    <!--{% endif %}-->
+
+                    {% if worklog['issue_details']['resolution_name'] %}
+                        <div class="resolution small">
+                            <b>Resolution:</b>
+                            {{ worklog['issue_details']['resolution_name'] }}
+                        </div>
+                    {% endif %}
+
+                    {% if worklog['issue_details']['component_name'] %}
+                        <div class="component small">
+                            <b>Component:</b>
+                            {{ worklog['issue_details']['component_name'] }}
+                        </div>
+                    {% endif %}
+
+                    <div class="original_estimate small">
                         <b>Original estimate:</b>
                         {{ worklog['issue_details']['original_estimate'] }} hours
                     </div>
-                    <div class="remaining_estimate">
+                    <div class="remaining_estimate small">
                         <b>Remaining estimate:</b>
                         {{ worklog['issue_details']['remaining_estimate'] }} hours
                     </div>
-                    <div class="priority">
-                        <b>Priority:</b>
-                        {{ worklog['issue_details']['priority_name'] }}
+
+                </div>
+                <div class="worklog">
+                    <div class="hours">
+                        <b>Logged:</b>
+                        {{ worklog['hours'] }} hours
                     </div>
-                    <div class="resolution">
-                        <b>Resolution:</b>
-                        {{ worklog['issue_details']['resolution_name'] }}
-                    </div>
-                    <div class="component">
-                        <b>Component:</b>
-                        {{ worklog['issue_details']['component_name'] }}
-                    </div>
+                    {% if worklog['work_description'] %}
+                        <div class="work-description">{{ worklog['work_description'] }}</div>
+                    {% endif %}
+                    <div class="created small">{{ worklog['worklog_details']['created'] }}</div>
+                    <div class="updated small">{{ worklog['worklog_details']['updated'] }}</div>
                 </div>
             </li>
             {% endfor %}
