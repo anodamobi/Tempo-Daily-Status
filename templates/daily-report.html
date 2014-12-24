@@ -34,6 +34,7 @@
             padding: 10px;
             margin-right: -1px;
             margin-top: -1px;
+            margin-bottom: 10px;
         }
         #summary li .workload {
             background: #e5e5e5;
@@ -50,13 +51,14 @@
         }
         #details > li {
             background: #f5f5f5;
+            margin-top: 10px;
         }
         .worklogs > li {
             border: 1px solid #cccccc;
             list-style: none;
             padding: 10px;
             background: #fff;
-            margin-top: -1px;
+            margin-bottom: 10px;
         }
         .worklogs .summary {
             font-weight: bold;
@@ -103,13 +105,32 @@
             padding-top: 10px;
             margin-top: 10px;
         }
+        h1 {
+            font-size: 1.4em;
+            margin: 0;
+            padding: 0;
+        }
+        h2 {
+            font-size: 1.3em;
+            padding-top: 10px;
+            padding-left: 10px;
+        }
+        h2 .hours {
+            font-size: 0.8em;
+            color: #aaa;
+        }
         #info .date {
-            
+            font-size: 1.2em;
+        }
+        #info {
+            text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 <div id="info">
+    <h1>Your team TEMPO worklogs</h1>
     <div class="date">{{ data['date'].strftime('%A, %B %d') }}</div>
 </div>
 <ul id="summary">
@@ -125,8 +146,7 @@
 <ul id="details">
 {% for username, user in users.iteritems() %}
     <li>
-        <div class="username">{{ user['full_name'] }}</div>
-        <div class="hours">{{ user['stats']['total_hours'] }}</div>
+        <h2>{{ user['full_name'] }} <span class="hours">{{ user['stats']['total_hours'] }} hours</span></h2>
         <ul class="worklogs">
             {% for worklog in user['worklogs'] %}
             <li>
@@ -188,8 +208,14 @@
                     {% if worklog['work_description'] %}
                         <div class="work-description">{{ worklog['work_description'] }}</div>
                     {% endif %}
-                    <div class="created small">{{ worklog['worklog_details']['created'] }}</div>
-                    <div class="updated small">{{ worklog['worklog_details']['updated'] }}</div>
+                    <div class="created small">
+                        <b>Created on:</b>
+                        {{ worklog['worklog_details']['created'] }}
+                    </div>
+                    <div class="updated small">
+                        <b>Updated on:</b>
+                        {{ worklog['worklog_details']['updated'] }}
+                    </div>
                 </div>
             </li>
             {% endfor %}
