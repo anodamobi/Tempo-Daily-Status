@@ -10,6 +10,11 @@ from jinja2 import Template
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
+import sys
+
+# fixing pwd
+os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 today = date.today()
 
