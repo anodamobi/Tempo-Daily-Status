@@ -20,6 +20,7 @@ today = date.today()
 
 configFile = ConfigParser.ConfigParser()
 
+
 def tree2dict(element):
     result = {}
     for child in element._children:
@@ -28,6 +29,7 @@ def tree2dict(element):
         else:
             result[child.tag] = child.text
     return result
+
 
 try:
     configFile.read('tds.conf')
@@ -61,19 +63,21 @@ worklogs = []
 try:
     url = tempoConfig['baseurl']
     url += '/plugins/servlet/tempo-getWorklog/'
-    url += '?dateFrom=%s-%s-%s' % (today.year, today.month, today.day)
-    url += '&dateTo=%s-%s-%s' % (today.year, today.month, today.day)
-    url += '&format=xml'
-    url += '&diffOnly=false'
-    url += '&addUserDetails=true'
-    url += '&addApprovalStatus=true'
-    url += '&addBillingInfo=true'
-    url += '&addIssueDescription=true'
-    url += '&addIssueDetails=true'
-    url += '&addIssueSummary=true'
-    url += '&addWorklogDetails=true'
-    url += '&tempoApiToken=%s' % tempoConfig['token']
-    request = requests.get(url)
+    params = {
+        'dateFrom': '%s-%s-%s' % (today.year, today.month, today.day - 1),
+        'dateTo': '%s-%s-%s' % (today.year, today.month, today.day - 1),
+        'format': 'xml',
+        'diffOnly': 'false',
+        'addUserDetails': 'true',
+        'addApprovalStatus': 'true',
+        'addBillingInfo': 'true',
+        'addIssueDescription': 'true',
+        'addIssueDetails': 'true',
+        'addIssueSummary': 'true',
+        'addWorklogDetails': 'true',
+        'tempoApiToken': tempoConfig['token']
+    }
+    request = requests.get(url, params=params)
 except Exception as e:
     print 'Unable to get worklogs due the error:'
     print e.message
@@ -87,7 +91,7 @@ else:
 
 users = {}
 for worklog in worklogs:
-    if not users.has_key(worklog['username']):
+    if worklog['username'] not in users:
         users[worklog['username']] = {
             'worklogs': [],
             'stats': {
@@ -106,7 +110,7 @@ data = {
     'date': today
 }
 
-template = Template(open('templates/daily-report.html').read())
+template = Template(open('templates/daily-report.html').read().decode('UTF-8'))
 result = template.render(users=users, globalConfig=globalConfig, tempoConfig=tempoConfig, data=data)
 
 # preparing message
@@ -115,8 +119,7 @@ msg['Subject'] = "Your team TEMPO worklogs"
 msg['From'] = 'Tempo Daily Status <%s>' % smtpConfig['from']
 msg['To'] = ", ".join(globalConfig['emails'])
 
-msg.attach(MIMEText('This is HTML email', 'plain'))
-msg.attach(MIMEText(result.encode('UTF-8'), 'html'))
+msg.attach(MIMEText(result.encode('UTF-8'), 'html', 'utf-8'))
 
 # sending email
 if smtpConfig['security'] == 'ssl':

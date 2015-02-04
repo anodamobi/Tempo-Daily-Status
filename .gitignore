@@ -56,3 +56,5 @@ target/
 .idea
 tempo.conf
 tds.conf
+
+venv
