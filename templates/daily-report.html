@@ -94,6 +94,9 @@
             border-color: #ffe28c;
             color: #594300;
         }
+        .resolution {
+            font-size: 0.9em;
+        }
         img {
             vertical-align:text-bottom;
         }
@@ -136,6 +139,9 @@
             border-top: 1px solid #aaa;
             font-size: 12px;
         }
+        .hours .gray {
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
@@ -147,9 +153,8 @@
     <ul id="summary">
     {% for username, user in users.iteritems() %}
         <li>
-            <div class="username">{{ user['full_name'] }}</div>
-            <div class="hours">Hours: {{ user['stats']['total_hours'] }}</div>
-            <div class="worklogs">Worklogs: {{ user['stats']['total_worklogs'] }}</div>
+            <div class="username"><a href="{{ tempoConfig['baseurl'] }}/secure/TempoUserBoard!timesheet.jspa?userId={{ username }}">{{ user['full_name'] }}</a></div>
+            <div class="hours" title="{{ '%0.2f' % user['stats']['total_hours']|float }} hours"><b>{{ user['stats']['total_hours_human'] }}</b> <span class="gray">in {{ user['stats']['total_worklogs'] }} worklogs</span></div>
             <div class="workload"><div class="inner" style="width: {{ user['stats']['workload'] }}%"></div></div>
         </li>
     {% endfor %}
@@ -157,24 +162,30 @@
     <ul id="details">
     {% for username, user in users.iteritems() %}
         <li>
-            <h2>{{ user['full_name'] }} <span class="hours">{{ user['stats']['total_hours'] }} hours</span></h2>
+            <h2>{{ user['full_name'] }} <span class="hours">{{ user['stats']['total_hours_human'] }}</span></h2>
             <ul class="worklogs">
                 {% for worklog in user['worklogs'] %}
                 <li>
                     <div class="issue">
                         <div class="priority pull-right">
-                            {{ worklog['issue_details']['priority_name'] }}
+                            <!--{{ worklog['issue_details']['priority_name'] }}-->
                             <img  src="{{ tempoConfig['baseurl'] }}/images/icons/priorities/{{ worklog['issue_details']['priority_name']|lower }}.png" />
                         </div>
 
                         <div class="key">
-                            <img src="{{ tempoConfig['baseurl'] }}/images/icons/issuetypes/{{ worklog['issue_details']['type_name']|lower|replace(' ', '') }}.png" />
+                            <img src="{{ tempoConfig['baseurl'] }}/images/icons/issuetypes/{{ worklog['issue_details']['type_name']|lower|replace(' ', '')|replace('-', '') }}.png" />
                             <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_details']['project_key'] }}">{{ worklog['issue_details']['project_name'] }}</a>
                             /
                             <a href="{{ tempoConfig['baseurl'] }}/browse/{{ worklog['issue_key'] }}">{{ worklog['issue_key'] }}</a>
                             <span class="status {{ worklog['issue_details']['status_name']|lower|replace(' ', '') }}">
                                 {{ worklog['issue_details']['status_name'] }}
                             </span>
+
+                            {% if worklog['issue_details']['resolution_name'] %}
+                                <span class="resolution">
+                                    {{ worklog['issue_details']['resolution_name'] }}
+                                </span>
+                            {% endif %}
                         </div>
 
                         <div class="summary">
@@ -187,13 +198,6 @@
                             <!--</div>-->
                         <!--{% endif %}-->
 
-                        {% if worklog['issue_details']['resolution_name'] %}
-                            <div class="resolution small">
-                                <b>Resolution:</b>
-                                {{ worklog['issue_details']['resolution_name'] }}
-                            </div>
-                        {% endif %}
-
                         {% if worklog['issue_details']['component_name'] %}
                             <div class="component small">
                                 <b>Component:</b>
@@ -201,32 +205,39 @@
                             </div>
                         {% endif %}
 
-                        <div class="original_estimate small">
-                            <b>Original estimate:</b>
-                            {{ worklog['issue_details']['original_estimate'] }} hours
-                        </div>
-                        <div class="remaining_estimate small">
-                            <b>Remaining estimate:</b>
-                            {{ worklog['issue_details']['remaining_estimate'] }} hours
-                        </div>
+                        {% if worklog['issue_details']['original_estimate'] %}
+                            <div class="original_estimate small">
+                                <b>Estimated:</b>
+                                {{ worklog['issue_details']['original_estimate_human'] }}
+                            </div>
+                        {% endif %}
+
+                        {% if worklog['issue_details']['remaining_estimate'] != '0.0' %}
+                            <div class="remaining_estimate small">
+                                <b>Remaining:</b>
+                                {{ worklog['issue_details']['remaining_estimate_human'] }}
+                            </div>
+                        {% endif %}
 
                     </div>
                     <div class="worklog">
                         <div class="hours">
                             <b>Logged:</b>
-                            {{ worklog['hours'] }} hours
+                            {{ worklog['hours_human'] }}
                         </div>
                         {% if worklog['work_description'] %}
                             <div class="work-description">{{ worklog['work_description'] }}</div>
                         {% endif %}
                         <div class="created small">
-                            <b>Created on:</b>
-                            {{ worklog['worklog_details']['created'] }}
+                            <b>Logged on:</b>
+                            {{ worklog['worklog_details']['created_human'] }}
                         </div>
-                        <div class="updated small">
-                            <b>Updated on:</b>
-                            {{ worklog['worklog_details']['updated'] }}
-                        </div>
+                        {% if worklog['worklog_details']['created'] != worklog['worklog_details']['updated'] %}
+                            <div class="updated small">
+                                <b>Updated on:</b>
+                                {{ worklog['worklog_details']['updated_human'] }}
+                            </div>
+                        {% endif %}
                     </div>
                 </li>
                 {% endfor %}

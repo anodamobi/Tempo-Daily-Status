@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__author__ = 'themengzor'
+__author__ = 'Alex Zavrazhniy <alex@anoda.mobi>'
 
 import requests
 import ConfigParser
-from datetime import date
+import sys
+import smtplib
+import os
+from datetime import date, datetime
 from xml.etree import ElementTree
 from jinja2 import Template
-import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
-import sys
 
 # fixing pwd
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -31,10 +31,22 @@ def tree2dict(element):
     return result
 
 
+def human_time(hours):
+    if hours is None:
+        return '0'
+
+    h, m = divmod(float(hours) * 60, 60)
+    if int(m) is not 0:
+        return '%dh %dm' % (h, m)
+    else:
+        return '%dh' % h
+
+
 try:
     configFile.read('tds.conf')
 except:
     print 'Unable to read config file ./tds.conf'
+    print 'Copy ./tds.conf.template to ./tds.conf and fill it with your credentials'
     exit(1)
 
 globalConfig = {}
@@ -64,8 +76,8 @@ try:
     url = tempoConfig['baseurl']
     url += '/plugins/servlet/tempo-getWorklog/'
     params = {
-        'dateFrom': '%s-%s-%s' % (today.year, today.month, today.day - 1),
-        'dateTo': '%s-%s-%s' % (today.year, today.month, today.day - 1),
+        'dateFrom': '%s-%s-%s' % (today.year, today.month, today.day-1),
+        'dateTo': '%s-%s-%s' % (today.year, today.month, today.day-1),
         'format': 'xml',
         'diffOnly': 'false',
         'addUserDetails': 'true',
@@ -105,13 +117,29 @@ for worklog in worklogs:
     users[worklog['username']]['stats']['total_hours'] += float(worklog['hours'])
     users[worklog['username']]['stats']['total_worklogs'] += 1
     users[worklog['username']]['stats']['workload'] = min(8, users[worklog['username']]['stats']['total_hours']) / 8 * 100
+    worklog['issue_details']['original_estimate_human'] = human_time(worklog['issue_details'].get('original_estimate', 0))
+    worklog['issue_details']['remaining_estimate_human'] = human_time(worklog['issue_details'].get('remaining_estimate', 0))
+    worklog['hours_human'] = human_time(worklog['hours'])
+    worklog['worklog_details']['created_human'] = datetime.strptime(worklog['worklog_details']['created'], '%Y-%m-%d %H:%M:%S').strftime('%b %-d, %H:%M:%S')
+    worklog['worklog_details']['updated_human'] = datetime.strptime(worklog['worklog_details']['updated'], '%Y-%m-%d %H:%M:%S').strftime('%b %-d, %H:%M:%S')
+
+for username, user in users.iteritems():
+    user['stats']['total_hours_human'] = human_time(user['stats']['total_hours'])
 
 data = {
     'date': today
 }
 
 template = Template(open('templates/daily-report.html').read().decode('UTF-8'))
-result = template.render(users=users, globalConfig=globalConfig, tempoConfig=tempoConfig, data=data)
+result = template.render(users=users, globalConfig=globalConfig, tempoConfig=tempoConfig, data=data).encode('UTF-8')
+
+# Debug
+# f = open('/tmp/tds.html', 'w')
+# f.write(result)
+# f.close()
+# os.system("open /tmp/tds.html")
+# exit()
+# / Debug
 
 # preparing message
 msg = MIMEMultipart('alternative')
@@ -119,7 +147,7 @@ msg['Subject'] = "Your team TEMPO worklogs"
 msg['From'] = 'Tempo Daily Status <%s>' % smtpConfig['from']
 msg['To'] = ", ".join(globalConfig['emails'])
 
-msg.attach(MIMEText(result.encode('UTF-8'), 'html', 'utf-8'))
+msg.attach(MIMEText(result, 'html', 'utf-8'))
 
 # sending email
 if smtpConfig['security'] == 'ssl':
