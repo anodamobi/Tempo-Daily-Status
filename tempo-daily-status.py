@@ -76,8 +76,8 @@ try:
     url = tempoConfig['baseurl']
     url += '/plugins/servlet/tempo-getWorklog/'
     params = {
-        'dateFrom': '%s-%s-%s' % (today.year, today.month, today.day-1),
-        'dateTo': '%s-%s-%s' % (today.year, today.month, today.day-1),
+        'dateFrom': '%s-%s-%s' % (today.year, today.month, today.day),
+        'dateTo': '%s-%s-%s' % (today.year, today.month, today.day),
         'format': 'xml',
         'diffOnly': 'false',
         'addUserDetails': 'true',
